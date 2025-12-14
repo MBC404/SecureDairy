@@ -3,61 +3,60 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
 from django.utils import timezone
-from django.db.models import Q
-from .forms import SignupForm, LetterForm # cite: uploaded:views_ui.py
+from django.db.models import Q # Used for OR queries
 
+# CRITICAL FIX: Import ModificationForm
 from .forms import SignupForm, LetterForm, ModificationForm 
 
 from .models import Letter, ModificationRequest, UserConnection, LetterVersion
 
 
-
-
 # ---------- AUTH ----------
 
 def login_view(request):
-    error_message = None # cite: uploaded:views_ui.py
-    if request.method == "POST": # cite: uploaded:views_ui.py
-        username = request.POST.get("username") # cite: uploaded:views_ui.py
-        password = request.POST.get("password") # cite: uploaded:views_ui.py
+    error_message = None
+    if request.method == "POST":
+        username = request.POST.get("username")
+        password = request.POST.get("password")
         
-        user = authenticate( # cite: uploaded:views_ui.py
+        user = authenticate(
             request,
             username=username,
             password=password,
         )
-        if user: # cite: uploaded:views_ui.py
-            login(request, user) # cite: uploaded:views_ui.py
-            return redirect("dashboard") # cite: uploaded:views_ui.py
+        if user:
+            login(request, user)
+            return redirect("dashboard")
         else:
             # Error message for wrong password/username
-            error_message = "Invalid username or password. Please try again." # cite: uploaded:views_ui.py
+            error_message = "Invalid username or password. Please try again."
             
     # Pass the error message to the template
-    return render(request, "letters/login.html", {"error_message": error_message}) # cite: uploaded:views_ui.py
+    return render(request, "letters/login.html", {"error_message": error_message})
 
 
 def signup_view(request):
-    if request.method == "POST": # cite: uploaded:views_ui.py
-        form = SignupForm(request.POST) # cite: uploaded:views_ui.py
-        if form.is_valid(): # cite: uploaded:views_ui.py
+    if request.method == "POST":
+        form = SignupForm(request.POST)
+        if form.is_valid():
             # form.save() handles user creation, password hashing, and ensures unique username
-            user = form.save() # cite: uploaded:views_ui.py
-            login(request, user) # cite: uploaded:views_ui.py
-            return redirect("dashboard") # cite: uploaded:views_ui.py
+            user = form.save()
+            # Log the user in immediately after signup
+            login(request, user)
+            return redirect("dashboard")
     else:
-        form = SignupForm() # cite: uploaded:views_ui.py
-
-    return render(request, "letters/signup.html", {"form": form}) # cite: uploaded:views_ui.py
+        form = SignupForm()
+        
+    return render(request, "letters/signup.html", {"form": form})
 
 
 @login_required
 def logout_view(request):
-    logout(request) # cite: uploaded:views_ui.py
-    return redirect("login") # cite: uploaded:views_ui.py
+    logout(request)
+    return redirect("login")
 
 
-# ---------- DASHBOARD / CONNECTION LOGIC ----------
+# ---------- DASHBOARD (CRITICAL FIX) ----------
 
 @login_required
 def dashboard(request):
@@ -67,18 +66,16 @@ def dashboard(request):
     pending_requests = UserConnection.objects.filter(
         receiver=user, 
         status="PENDING"
-    ).select_related('requester') # Query for pending requests sent to *you*
+    ).select_related('requester') # Requests sent to *you*
 
-    # 2. My Connections (Accepted connections where the current user is requester OR receiver)
+    # 2. My Connections (Accepted connections)
     connections = UserConnection.objects.filter(
         Q(requester=user) | Q(receiver=user),
         status="ACCEPTED"
     ).select_related('requester', 'receiver') # Use Q object for OR logic
 
-    # 3. Pending Modifications (Awaiting YOUR approval)
-    # You only approve modifications for letters YOU SENT, which are PENDING
+    # 3. Pending Modifications (Awaiting YOUR approval - you must be the letter's sender)
     modifications = ModificationRequest.objects.filter(
-        # The current user must be the SENDER of the letter to approve the modification
         letter__sender=user, 
         status="PENDING"
     ).select_related('letter', 'requested_by') 
@@ -92,114 +89,139 @@ def dashboard(request):
     return render(request, "letters/dashboard.html", context)
 
 
+# ---------- CONNECTION MANAGEMENT ----------
+
 @login_required
 def search_user(request):
-    query = None # cite: uploaded:views_ui.py
-    users = [] # cite: uploaded:views_ui.py
-
-    if request.method == "POST": # cite: uploaded:views_ui.py
-        query = request.POST.get("username") # cite: uploaded:views_ui.py
-        if query: # cite: uploaded:views_ui.py
-            users = User.objects.filter( # cite: uploaded:views_ui.py
-                username__icontains=query # cite: uploaded:views_ui.py
-            ).exclude(id=request.user.id) # cite: uploaded:views_ui.py
-
-    return render(request, "letters/search.html", {"query": query, "users": users}) # cite: uploaded:views_ui.py
+    users = None
+    query = None
+    if request.method == "POST":
+        query = request.POST.get("username")
+        # Find users matching the search term, excluding the current user
+        users = User.objects.filter(username__icontains=query).exclude(id=request.user.id)
+    
+    return render(request, "letters/search.html", {"users": users, "query": query})
 
 
 @login_required
 def send_connection(request, user_id):
-    receiver = get_object_or_404(User, id=user_id) # cite: uploaded:views_ui.py
+    # Ensure the target user exists
+    receiver = get_object_or_404(User, id=user_id)
+    requester = request.user
 
-    # Prevent self-connection or duplicate requests (models handles unique_together check)
-    if request.user != receiver: # cite: uploaded:views_ui.py
-        UserConnection.objects.get_or_create( # cite: uploaded:views_ui.py
-            requester=request.user, receiver=receiver # cite: uploaded:views_ui.py
-        )
+    # Prevent self-connection or duplicate pending requests
+    if requester != receiver and not UserConnection.objects.filter(
+        requester=requester, receiver=receiver
+    ).exists():
+        UserConnection.objects.create(requester=requester, receiver=receiver, status="PENDING")
 
-    return redirect("dashboard") # cite: uploaded:views_ui.py
+    return redirect("dashboard")
 
 
 @login_required
 def accept_connection(request, conn_id):
-    connection = get_object_or_404(UserConnection, id=conn_id) # cite: uploaded:views_ui.py
+    connection = get_object_or_404(UserConnection, id=conn_id)
 
-    # Ensure the user accepting is the receiver
-    if request.user == connection.receiver: # cite: uploaded:views_ui.py
-        connection.status = "ACCEPTED" # cite: uploaded:views_ui.py
-        connection.save() # cite: uploaded:views_ui.py
+    # Ensure the current user is the receiver and the status is PENDING
+    if connection.receiver == request.user and connection.status == "PENDING":
+        connection.status = "ACCEPTED"
+        connection.save()
 
-    return redirect("dashboard") # cite: uploaded:views_ui.py
+    return redirect("dashboard")
 
 
-# ---------- LETTER LOGIC ----------
+# ---------- CONVERSATION & LETTER SENDING ----------
 
 @login_required
 def conversation(request, user_id):
-    other_user = get_object_or_404(User, id=user_id) # cite: uploaded:views_ui.py
-    
-    # Find letters where the current user and the other user are sender/receiver
-    letters = Letter.objects.filter( # cite: uploaded:views_ui.py
-        Q(sender=request.user, receiver=other_user) | Q(sender=other_user, receiver=request.user) # cite: uploaded:views_ui.py
-    ).order_by('created_at').select_related('approved_version') # cite: uploaded:views_ui.py
+    # The other user in the conversation
+    other_user = get_object_or_404(User, id=user_id)
+    current_user = request.user
 
-    return render(request, "letters/conversation.html", { # cite: uploaded:views_ui.py
-        "other_user": other_user, 
-        "letters": letters
-    })
+    # Check if a connection exists and is accepted
+    connection_exists = UserConnection.objects.filter(
+        Q(requester=current_user, receiver=other_user) | Q(requester=other_user, receiver=current_user),
+        status="ACCEPTED"
+    ).exists()
+
+    if not connection_exists:
+        # If no connection, redirect to search or dashboard
+        return redirect("dashboard")
+
+    # Get all letters between these two users, ordered by creation date
+    letters = Letter.objects.filter(
+        Q(sender=current_user, receiver=other_user) | Q(sender=other_user, receiver=current_user)
+    ).order_by("created_at").select_related('sender', 'receiver')
+
+    context = {
+        "other_user": other_user,
+        "letters": letters,
+        "connection_exists": connection_exists,
+    }
+
+    return render(request, "letters/conversation.html", context)
 
 
 @login_required
 def send_letter(request, user_id):
-    # Retrieve the intended recipient
-    receiver = get_object_or_404(User, id=user_id) # cite: uploaded:views_ui.py
+    receiver = get_object_or_404(User, id=user_id)
+
+    # Check for accepted connection before allowing a send
+    connection_exists = UserConnection.objects.filter(
+        Q(requester=request.user, receiver=receiver) | Q(requester=receiver, receiver=request.user),
+        status="ACCEPTED"
+    ).exists()
+
+    if not connection_exists:
+        return redirect("dashboard")
     
-    # Check for POST request
-    if request.method == "POST": # cite: uploaded:views_ui.py
-        form = LetterForm(request.POST) # Initialize form with submitted data # cite: uploaded:views_ui.py
-        
-        if form.is_valid(): # CRITICAL FIX: Only proceed if form is valid (content exists) # cite: uploaded:views_ui.py
-            content = form.cleaned_data["content"] # cite: uploaded:views_ui.py
+    if request.method == "POST":
+        form = LetterForm(request.POST) # Use the form to validate the content
+        if form.is_valid():
+            content = form.cleaned_data["content"]
             
-            # --- Database Save Logic ---
-            
-            # 1. Create the Letter object (the conversation container)
-            letter = Letter.objects.create( # cite: uploaded:views_ui.py
+            # 1. Create the base Letter object
+            letter = Letter.objects.create(
                 sender=request.user,
-                receiver=receiver
+                receiver=receiver,
             )
 
-            # 2. Create the first LetterVersion
-            LetterVersion.objects.create( # cite: uploaded:views_ui.py
+            # 2. Create the first LetterVersion (instantly approved)
+            LetterVersion.objects.create(
                 letter=letter,
                 content=content,
                 created_by=request.user,
                 is_approved=True
             )
 
-            return redirect("conversation", user_id=user_id) # cite: uploaded:views_ui.py
+            return redirect("conversation", user_id=user_id)
         # If form is NOT valid, execution falls through to render the page with errors.
     
     # Handle GET request (or invalid POST request)
     else:
-        # CRITICAL: Instantiate a blank form for the GET request
-        form = LetterForm() # cite: uploaded:views_ui.py
+        # Instantiate a blank form for the GET request
+        form = LetterForm() 
 
     # Pass both receiver and the form object to the template
     return render(request, "letters/send.html", {
         "receiver": receiver,
-        "form": form, # <-- Fixes the missing text box
-    }) # cite: uploaded:views_ui.py
+        "form": form,
+    })
 
 
-# ---------- MODIFY LETTER ----------
+# ---------- MODIFY LETTER (CRITICAL FIX) ----------
 
 @login_required
 def modify_letter(request, letter_id):
     letter = get_object_or_404(Letter, id=letter_id)
+    
+    # Prevent modification request if no approved version exists yet
+    if not letter.approved_version():
+        recipient = letter.receiver if letter.sender == request.user else letter.sender
+        return redirect("conversation", user_id=recipient.id)
 
     if request.method == "POST":
-        # Instantiate the form with POST data for validation
+        # CRITICAL FIX: Instantiate the form with POST data for validation
         form = ModificationForm(request.POST) 
         if form.is_valid():
             # Create the modification request using cleaned data
@@ -212,34 +234,31 @@ def modify_letter(request, letter_id):
         # If form is not valid, the view falls through to render with errors
     
     else:
-        # Pass a blank form for GET requests
+        # CRITICAL FIX: Instantiate a blank form for GET requests
         form = ModificationForm()
 
     # The template expects both 'letter' and 'form'
     return render(request, "letters/modify.html", {
         "letter": letter,
-        "form": form, # <-- CRITICAL FIX: Pass the form object
-    }) # cite: uploaded:views_ui.py
+        "form": form, # Pass the form object
+    })
 
 
 # ---------- APPROVE MOD ----------
 
 @login_required
 def approve_modification(request, mod_id):
-    modification = get_object_or_404(ModificationRequest, id=mod_id) # cite: uploaded:views_ui.py
+    mod = get_object_or_404(ModificationRequest, id=mod_id)
 
-    # Only the original sender of the letter can approve
-    if request.user == modification.letter.sender and modification.status == "PENDING": # cite: uploaded:views_ui.py
-        modification.status = "APPROVED" # cite: uploaded:views_ui.py
-        modification.approved_at = timezone.now() # cite: uploaded:views_ui.py
-        modification.save() # cite: uploaded:views_ui.py
-        
-        # Create a new approved version
-        LetterVersion.objects.create( # cite: uploaded:views_ui.py
-            letter=modification.letter,
-            content=modification.proposed_content,
-            created_by=request.user,
-            is_approved=True
-        )
+    # Only the SENDER of the letter can approve the modification
+    if request.user != mod.letter.sender:
+        return redirect("dashboard") # Not authorized
 
-    return redirect("dashboard") # cite: uploaded:views_ui.py
+    if request.method == "POST":
+        if mod.status == 'PENDING':
+            # This method in the model is expected to handle status change and new LetterVersion creation
+            mod.approve() 
+        return redirect("dashboard")
+
+    # For a GET request, show the modification details for review
+    return render(request, "letters/approve_mod.html", {"modification": mod})
