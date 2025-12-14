@@ -36,39 +36,24 @@
     /* Removed .mod-history-summary as requested previously */
 </style>
 
-<div class="content-header">
-    <h1>Conversation with {{ other.username }}</h1>
-    <p class="text-muted">A history of your secured, modifiable letters.</p>
+<div class="content-header" style="max-width: 900px; margin: 0 auto 30px;">
+    <h1>Conversation with {{ other_user.username }}</h1>
+    <p class="text-muted">History of letters sent and received.</p>
 </div>
+
 
 <div class="message-container">
     {% for letter in letters %}
-        {% if letter.sender == user %}
-            {# Sent by current user #}
-            <div class="message-card fade-in message-sent">
-                
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; padding-bottom: 8px; border-bottom: 1px dashed var(--border);">
-                    <strong style="font-size: 1em; color: var(--accent);">You</strong>
-                    <span class="text-muted" style="font-size: 0.75em;">
-                        #{{ letter.id }} | {{ letter.created_at|date:"M d, H:i" }}
-                        {% if letter.pending_modifications %}
-                            <span class="status pending" style="margin-left: 5px; color: var(--text);">MOD PENDING</span>
-                        {% endif %}
-                    </span>
-                </div>
+        {% if letter.approved_version %}
+            {% if letter.sender == user %}
+                <div class="message-card message-sent fade-in">
+                    <span style="font-size: 0.75em; color: var(--accent); font-weight: 600; display: block; margin-bottom: 5px;">YOU SENT</span>
+            {% else %}
+                <div class="message-card message-received fade-in">
+                    <span style="font-size: 0.75em; color: var(--success); font-weight: 600; display: block; margin-bottom: 5px;">{{ letter.sender.username }} SENT</span>
+            {% endif %}
 
-                <div style="white-space: pre-wrap; margin-bottom: 15px;">
-                    {{ letter.approved_version.content }}
-                </div>
-                
-            </div>
-        
-        {% else %}
-            {# Received by current user #}
-            <div class="message-card fade-in message-received">
-
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; padding-bottom: 8px; border-bottom: 1px dashed var(--border);">
-                    <strong style="font-size: 1em; color: var(--success);">{{ letter.sender.username }}</strong>
+                <div style="margin-bottom: 10px; border-bottom: 1px solid var(--border); padding-bottom: 5px;">
                     <span class="text-muted" style="font-size: 0.75em;">
                         #{{ letter.id }} | {{ letter.created_at|date:"M d, H:i" }}
                         {% if letter.pending_modifications %}
@@ -96,8 +81,7 @@
 </div>
 
 <div style="margin-top: 40px; border-top: 1px solid var(--border); padding-top: 20px; display: flex; justify-content: space-between; align-items: center; max-width: 900px; margin: 40px auto 0;">
-    <a href="{% url 'send_letter' other.id %}" class="btn btn-primary">Send New Letter to {{ other.username }}</a>
-    <a href="{% url 'dashboard' %}" class="btn btn-ghost">Back to Dashboard</a>
+    <a href="{% url 'send_letter' other_user.id %}" class="btn btn-primary" style="width: 100%;">Write New Letter to {{ other_user.username }}</a>
 </div>
 
 {% endblock %}
