@@ -18,6 +18,7 @@ class UserConnection(models.Model):
     status = models.CharField(max_length=10, choices=STATUS_CHOICES, default="PENDING")
 
     class Meta:
+        # Ensures a user can't send the same request twice
         unique_together = ("requester", "receiver")
 
     def __str__(self):
@@ -37,7 +38,6 @@ class Letter(models.Model):
     def approved_version(self):
         """
         Returns the latest approved version of this letter.
-        SAFE for templates.
         """
         return (
             self.versions.filter(is_approved=True)
@@ -78,7 +78,7 @@ class ModificationRequest(models.Model):
     STATUS_CHOICES = (
         ("PENDING", "Pending"),
         ("APPROVED", "Approved"),
-        ("REJECTED", "Rejected"), # <-- NEW: Added REJECTED status
+        ("REJECTED", "Rejected"),
     )
 
     letter = models.ForeignKey(
