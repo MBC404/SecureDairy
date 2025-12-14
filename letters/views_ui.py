@@ -6,8 +6,11 @@ from django.utils import timezone
 from django.db.models import Q
 from .forms import SignupForm, LetterForm # cite: uploaded:views_ui.py
 
-from .models import Letter, ModificationRequest, UserConnection, LetterVersion # cite: uploaded:views_ui.py
-from .forms import SignupForm # cite: uploaded:views_ui.py
+from .forms import SignupForm, LetterForm, ModificationForm 
+
+from .models import Letter, ModificationRequest, UserConnection, LetterVersion
+
+
 
 
 # ---------- AUTH ----------
@@ -58,26 +61,35 @@ def logout_view(request):
 
 @login_required
 def dashboard(request):
-    # Fetch received connection requests pending action
-    pending_requests = UserConnection.objects.filter( # cite: uploaded:views_ui.py
-        receiver=request.user, status="PENDING" # cite: uploaded:views_ui.py
-    )
+    user = request.user
 
-    # Fetch accepted connections
-    connections = UserConnection.objects.filter( # cite: uploaded:views_ui.py
-        Q(requester=request.user) | Q(receiver=request.user), status="ACCEPTED" # cite: uploaded:views_ui.py
-    )
-    
-    # Fetch modifications awaiting this user's approval (where the user is the original letter sender)
-    modifications = ModificationRequest.objects.filter( # cite: uploaded:views_ui.py
-        letter__sender=request.user, status="PENDING" # cite: uploaded:views_ui.py
-    )
+    # 1. Connection Requests (Incoming requests to the current user)
+    pending_requests = UserConnection.objects.filter(
+        receiver=user, 
+        status="PENDING"
+    ).select_related('requester') # Query for pending requests sent to *you*
 
-    return render(request, "letters/dashboard.html", { # cite: uploaded:views_ui.py
+    # 2. My Connections (Accepted connections where the current user is requester OR receiver)
+    connections = UserConnection.objects.filter(
+        Q(requester=user) | Q(receiver=user),
+        status="ACCEPTED"
+    ).select_related('requester', 'receiver') # Use Q object for OR logic
+
+    # 3. Pending Modifications (Awaiting YOUR approval)
+    # You only approve modifications for letters YOU SENT, which are PENDING
+    modifications = ModificationRequest.objects.filter(
+        # The current user must be the SENDER of the letter to approve the modification
+        letter__sender=user, 
+        status="PENDING"
+    ).select_related('letter', 'requested_by') 
+
+    context = {
         "pending_requests": pending_requests,
         "connections": connections,
         "modifications": modifications,
-    })
+    }
+
+    return render(request, "letters/dashboard.html", context)
 
 
 @login_required
@@ -184,20 +196,30 @@ def send_letter(request, user_id):
 
 @login_required
 def modify_letter(request, letter_id):
-    letter = get_object_or_404(Letter, id=letter_id) # cite: uploaded:views_ui.py
-    form = ModificationForm() # Assuming ModificationForm is imported
+    letter = get_object_or_404(Letter, id=letter_id)
 
-    if request.method == "POST": # cite: uploaded:views_ui.py
-        form = ModificationForm(request.POST)
+    if request.method == "POST":
+        # Instantiate the form with POST data for validation
+        form = ModificationForm(request.POST) 
         if form.is_valid():
-            ModificationRequest.objects.create( # cite: uploaded:views_ui.py
+            # Create the modification request using cleaned data
+            ModificationRequest.objects.create(
                 letter=letter,
                 requested_by=request.user,
-                proposed_content=form.cleaned_data["proposed_content"]
+                proposed_content=form.cleaned_data["proposed_content"] # Use cleaned data
             )
-            return redirect("dashboard") # cite: uploaded:views_ui.py
+            return redirect("dashboard")
+        # If form is not valid, the view falls through to render with errors
+    
+    else:
+        # Pass a blank form for GET requests
+        form = ModificationForm()
 
-    return render(request, "letters/modify.html", {"letter": letter, "form": form}) # cite: uploaded:views_ui.py
+    # The template expects both 'letter' and 'form'
+    return render(request, "letters/modify.html", {
+        "letter": letter,
+        "form": form, # <-- CRITICAL FIX: Pass the form object
+    }) # cite: uploaded:views_ui.py
 
 
 # ---------- APPROVE MOD ----------
