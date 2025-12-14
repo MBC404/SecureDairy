@@ -4,11 +4,11 @@ import dj_database_url
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = 'dev-secret-key'
+SECRET_KEY = ''
 DEBUG = os.environ.get('DEBUG', 'False').lower() == 'true'
 
-ALLOWED_HOSTS = ['your-app-name.onrender.com',]
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['SecureDairy.onrender.com',]
+
 
 INSTALLED_APPS = [
     'django.contrib.admin',
