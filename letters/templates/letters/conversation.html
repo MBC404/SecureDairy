@@ -4,23 +4,26 @@
 <h1>Conversation with {{ other_user.username }}</h1>
 
 {% for letter in letters %}
-    {% if letter.approved_version %}
-        <div class="card">
-            <strong>{{ letter.sender.username }}</strong>
-            <p style="white-space:pre-wrap;">
-                {{ letter.approved_version.content }}
-            </p>
-            <a href="{% url 'modify' letter.id %}" class="btn btn-ghost">
+<div class="message {% if letter.sender == user %}sent{% else %}received{% endif %}">
+    <div class="message-header">
+        <span>{% if letter.sender == user %}You{% else %}{{ letter.sender.username }}{% endif %}</span>
+        <span>{{ letter.created_at|date:"M d, H:i" }}</span>
+    </div>
+
+    <div style="white-space:pre-wrap;">{{ letter.approved_version.content }}</div>
+
+    {% if user == letter.receiver %}
+        <div style="margin-top:10px;">
+            <a href="{% url 'modify' letter.id %}" class="btn btn-warning">
                 Request Modification
             </a>
         </div>
     {% endif %}
+</div>
 {% empty %}
-    <p>No letters yet</p>
+<p>No letters yet</p>
 {% endfor %}
 
-<a href="{% url 'send_letter' other_user.id %}" class="btn btn-primary">
-    Write Letter
-</a>
+<a href="{% url 'send_letter' other_user.id %}" class="fab">✉ Write</a>
 
 {% endblock %}

@@ -2,10 +2,10 @@
 <html>
 <body>
 <form method="post">
-    {% csrf_token %}
-    <input name="username" placeholder="Username">
-    <input name="password" type="password" placeholder="Password">
-    <button>Login</button>
+{% csrf_token %}
+<input name="username" placeholder="Username">
+<input type="password" name="password" placeholder="Password">
+<button>Login</button>
 </form>
 </body>
 </html>

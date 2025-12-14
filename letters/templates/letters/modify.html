@@ -4,9 +4,9 @@
 <h2>Request Modification</h2>
 
 <form method="post" class="card">
-    {% csrf_token %}
-    {{ form.proposed_content }}
-    <button class="btn btn-primary">Submit</button>
+{% csrf_token %}
+{{ form.proposed_content }}
+<button class="btn btn-warning">Submit Request</button>
 </form>
 
 {% endblock %}

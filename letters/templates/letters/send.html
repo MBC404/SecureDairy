@@ -4,9 +4,9 @@
 <h2>Send Letter to {{ receiver.username }}</h2>
 
 <form method="post" class="card">
-    {% csrf_token %}
-    {{ form.content }}
-    <button class="btn btn-primary">Send</button>
+{% csrf_token %}
+{{ form.content }}
+<button class="btn btn-primary">Send Letter</button>
 </form>
 
 {% endblock %}

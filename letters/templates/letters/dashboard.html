@@ -1,35 +1,29 @@
 {% extends "letters/base.html" %}
 {% block content %}
 
-<h1>Your Dashboard</h1>
+<h1>Dashboard</h1>
 
 <div class="card">
-    <h2>Connection Requests</h2>
-    {% for req in pending_requests %}
-        <p>
-            {{ req.requester.username }}
-            <a href="{% url 'accept' req.id %}" class="btn btn-success">Accept</a>
-        </p>
-    {% empty %}
-        <p>No pending requests</p>
-    {% endfor %}
+<h2>Connection Requests</h2>
+{% for r in pending_requests %}
+<p>
+<b>{{ r.requester.username }}</b>
+<a href="{% url 'accept' r.id %}" class="btn btn-success">Accept</a>
+</p>
+{% empty %}
+<p>No requests</p>
+{% endfor %}
 </div>
 
 <div class="card">
-    <h2>My Connections</h2>
-    {% for conn in connections %}
-        {% if conn.requester == user %}
-            <a href="{% url 'conversation' conn.receiver.id %}" class="btn btn-primary">
-                {{ conn.receiver.username }}
-            </a>
-        {% else %}
-            <a href="{% url 'conversation' conn.requester.id %}" class="btn btn-primary">
-                {{ conn.requester.username }}
-            </a>
-        {% endif %}
-    {% empty %}
-        <p>No connections yet</p>
-    {% endfor %}
+<h2>Your Connections</h2>
+{% for c in connections %}
+<a href="{% url 'conversation' c.other_user.id %}" class="btn btn-primary">
+{{ c.other_user.username }}
+</a>
+{% empty %}
+<p>No connections yet</p>
+{% endfor %}
 </div>
 
 {% endblock %}
