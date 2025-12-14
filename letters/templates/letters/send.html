@@ -1,6 +1,3 @@
-{% extends 'letters/base.html' %}
-{% block content %}
-
 <div class="card card-form fade-in">
     <h2 style="text-align: center; border-bottom: none; color: var(--accent);">Send Letter to {{ receiver.username }}</h2>
     <p class="text-muted" style="text-align: center; margin-bottom: 30px;">Your letter will be instantly approved and delivered.</p>
@@ -19,13 +16,17 @@
     <form method="post">
         {% csrf_token %}
         
-        {% for field in form %}
-            <div class="form-group" style="margin-bottom: 20px;">
-                <label for="{{ field.id_for_label }}" style="display: block; margin-bottom: 8px; font-weight: 600;">{{ field.label }}</label>
-                {{ field }}
-            </div>
-        {% endfor %}
-
+        <div class="form-group" style="margin-bottom: 20px;">
+            <label for="{{ form.content.id_for_label }}" style="display: block; margin-bottom: 8px; font-weight: 600;">{{ form.content.label }}</label>
+            
+            {{ form.content }}
+            
+            {% if form.content.errors %}
+                {% for error in form.content.errors %}
+                    <small style="color: var(--danger);">{{ error }}</small>
+                {% endfor %}
+            {% endif %}
+        </div>
         <button class="btn btn-primary" type="submit" style="width: 100%; margin-top: 10px;">Send Letter</button>
     </form>
 
@@ -33,5 +34,4 @@
         <a class="btn btn-ghost" href="{% url 'conversation' receiver.id %}" style="border: none;">Cancel</a>
     </div>
 </div>
-
 {% endblock %}
