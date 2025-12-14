@@ -1,0 +1,1 @@
+web: gunicorn LETTERBOX.wsgi:application

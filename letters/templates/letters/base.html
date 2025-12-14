@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>LetterBox | Secure Modifications</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap" rel="stylesheet">
+
+<style>
+:root {
+    /* Palette Refinement */
+    --bg: #0d1117; /* Deepest background, GitHub dark theme inspired */
+    --panel: #161b22; /* Sidebar/Card background */
+    --surface: #21262d; /* For input and content blocks */
+    --border: #30363d;
+    --text: #c9d1d9; /* Light text */
+    --muted: #8b949e; /* Muted text */
+    --accent: #58a6ff; /* Blue primary color */
+    --success: #3fb950; /* Green for success */
+    --warning: #d29922; /* Amber for warning */
+    --danger: #f85149; /* Red for rejection/error */
+    --shadow-color: rgba(0, 0, 0, 0.4);
+}
+
+* { box-sizing: border-box; }
+
+body {
+    margin: 0;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+    overflow-x: hidden;
+}
+
+/* SIDEBAR - Polished */
+.sidebar {
+    width: 260px;
+    background: var(--panel);
+    border-right: 1px solid var(--border);
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    position: sticky;
+    top: 0;
+    box-shadow: 2px 0 10px var(--shadow-color);
+}
+
+.logo {
+    font-size: 1.6rem;
+    font-weight: 800;
+    color: var(--accent);
+    margin-bottom: 35px;
+    text-shadow: 0 0 5px rgba(88, 166, 255, 0.2);
+}
+
+.user-info {
+    color: var(--muted);
+    padding-bottom: 20px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 20px;
+    font-size: 0.9em;
+}
+
+.nav-link {
+    display: block;
+    padding: 12px 10px;
+    color: var(--text);
+    text-decoration: none;
+    transition: background 0.2s, color 0.2s;
+    border-radius: 6px;
+    margin-bottom: 5px;
+}
+.nav-link:hover {
+    background: var(--surface);
+    color: var(--accent);
+}
+
+/* MAIN CONTENT */
+.main-content {
+    flex-grow: 1;
+    padding: 50px 40px;
+}
+
+h1, h2, h3 { color: var(--text); margin-top: 0; font-weight: 700; }
+h2 { border-bottom: 1px solid var(--border); padding-bottom: 15px; margin-bottom: 25px; font-size: 1.5rem;}
+
+.content-header {
+    margin-bottom: 40px;
+}
+
+/* CARDS AND LISTS - Added depth */
+.card {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 25px;
+    margin-bottom: 20px;
+    box-shadow: 0 5px 15px var(--shadow-color);
+}
+
+/* For forms that are the main content on a page (Login, Signup) */
+.card-form {
+    max-width: 450px;
+    margin: 80px auto;
+    padding: 30px;
+    box-shadow: 0 10px 20px var(--shadow-color);
+}
+
+.list-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 0;
+    border-bottom: 1px solid var(--border);
+}
+.list-item:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+}
+.list-item:first-child {
+    padding-top: 0;
+}
+
+/* BUTTONS - Polished */
+.btn {
+    padding: 10px 20px;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 600;
+    text-decoration: none;
+    display: inline-block;
+    transition: all 0.2s ease;
+    text-align: center;
+}
+
+.btn-primary { background: var(--accent); color: var(--bg); }
+.btn-primary:hover { background: #4c9aff; transform: translateY(-1px); box-shadow: 0 4px 8px rgba(88, 166, 255, 0.4); }
+
+.btn-success { background: var(--success); color: var(--bg); }
+.btn-success:hover { background: #33a646; transform: translateY(-1px); box-shadow: 0 4px 8px rgba(63, 185, 80, 0.4); }
+
+.btn-danger { background: var(--danger); color: var(--text); }
+.btn-danger:hover { background: #d73a49; transform: translateY(-1px); }
+
+.btn-ghost {
+    background: transparent;
+    color: var(--accent);
+    border: 1px solid var(--border);
+}
+.btn-ghost:hover {
+    background: var(--surface);
+    border-color: var(--accent);
+    color: #fff;
+}
+
+/* STATUS TAGS */
+.status {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-left: 10px;
+    color: var(--bg);
+}
+
+.pending { background: var(--warning); }
+.approved { background: var(--success); }
+.rejected { background: var(--danger); color: var(--text); } /* Text color kept light for contrast */
+
+/* FORM ELEMENTS - Polished */
+input, textarea {
+    width: 100%;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px;
+    color: var(--text);
+    margin-bottom: 15px;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    font-size: 16px;
+}
+input:focus, textarea:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(88, 166, 255, 0.3);
+    outline: none;
+    background: var(--panel);
+}
+textarea { resize: vertical; }
+
+/* UTILITIES */
+.text-muted {
+    color: var(--muted);
+    font-size: 0.9em;
+}
+
+/* ANIMATION */
+.fade-in {
+    animation: fade 0.5s ease-out;
+}
+
+@keyframes fade {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+</style>
+</head>
+<body>
+
+{% if user.is_authenticated %}
+    <div class="sidebar">
+        <div class="logo">LetterBox</div>
+        <div class="user-info">
+            Welcome back,<br><strong>{{ user.username }}</strong>
+        </div>
+        <nav style="flex-grow: 1; margin-bottom: 20px;">
+            <a href="{% url 'dashboard' %}" class="nav-link">Dashboard</a>
+            <a href="{% url 'search_user' %}" class="nav-link">Find Connections</a>
+        </nav>
+        <a href="{% url 'logout' %}" class="btn btn-danger">Logout</a>
+    </div>
+{% endif %}
+
+<div class="main-content">
+    {% block content %}{% endblock %}
+</div>
+
+</body>
+</html>
