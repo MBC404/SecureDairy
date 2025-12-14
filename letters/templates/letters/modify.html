@@ -1,45 +1,12 @@
-{% extends 'letters/base.html' %}
+{% extends "letters/base.html" %}
 {% block content %}
 
-<div class="card card-form fade-in">
-    <h2 style="text-align: center; border-bottom: none; color: var(--accent);">Request Modification</h2>
-    <p class="text-muted" style="text-align: center; margin-bottom: 25px;">
-        You are proposing a change for Letter #{{ letter.id }}. The original sender must approve it.
-    </p>
+<h2>Request Modification</h2>
 
-    <div style="padding: 15px; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; margin-bottom: 30px;">
-        <p style="font-weight: 600; margin-bottom: 5px; color: var(--muted);">Current Letter Content:</p>
-        <p style="white-space: pre-wrap; font-size: 0.9em; margin-top: 0;">"{{ letter.approved_version.content|truncatechars:150 }}"</p>
-    </div>
-
-
-    {% if form.errors %}
-        <div style="color: var(--danger); padding: 10px; border: 1px solid var(--danger); background: rgba(248, 81, 73, 0.1); border-radius: 8px; margin-bottom: 15px;">
-            <p style="margin: 0; font-weight: 600;">Validation Error:</p>
-            {% for field in form %}
-                {% for error in field.errors %}
-                    <small style="display: block;">- {{ field.label }}: {{ error }}</small>
-                {% endfor %}
-            {% endfor %}
-        </div>
-    {% endif %}
-
-    <form method="post">
-        {% csrf_token %}
-        
-        {% for field in form %}
-            <div class="form-group" style="margin-bottom: 20px;">
-                <label for="{{ field.id_for_label }}" style="display: block; margin-bottom: 8px; font-weight: 600;">{{ field.label }}</label>
-                {{ field }}
-            </div>
-        {% endfor %}
-        
-        <button class="btn btn-primary" type="submit" style="width: 100%; margin-top: 10px;">Submit Modification Request</button>
-    </form>
-
-    <div style="margin-top: 20px; text-align: right;">
-        <a class="btn btn-ghost" href="{% url 'conversation' letter.receiver.id %}" style="border: none;">Cancel</a>
-    </div>
-</div>
+<form method="post">
+    {% csrf_token %}
+    {{ form.proposed_content }}
+    <button class="btn btn-primary">Submit</button>
+</form>
 
 {% endblock %}

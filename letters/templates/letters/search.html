@@ -1,36 +1,23 @@
 {% extends "letters/base.html" %}
 {% block content %}
 
-<div class="content-header">
-    <h1>Find New Connections</h1>
-    <p class="text-muted">Search for users to connect and exchange letters with.</p>
-</div>
+<h1>Find Users</h1>
 
-<div class="card fade-in">
-    <form method="post" style="display: flex; gap: 15px; align-items: center;">
-        {% csrf_token %}
-        <input type="text" name="username" placeholder="Enter username" required style="flex-grow: 1; margin-bottom: 0;">
-        <button class="btn btn-primary" type="submit" style="flex-shrink: 0;">Search</button>
-    </form>
-</div>
+<form method="post">
+    {% csrf_token %}
+    <input type="text" name="username" placeholder="Username" required>
+    <button class="btn btn-primary">Search</button>
+</form>
 
-{% if query %}
-    <div class="card fade-in" style="margin-top: 30px;">
-        <h2>Results for "{{ query }}"</h2>
-
-        {% for user_result in users %}
-            <div class="list-item">
-                <strong style="font-size: 1.1em;">{{ user_result.username }}</strong>
-                <a href="{% url 'connect' user_result.id %}" class="btn btn-success">Send Connection Request</a>
-            </div>
-        {% empty %}
-            <p class="text-muted">No users found matching your search term. Try a different name.</p>
-        {% endfor %}
-    </div>
+{% if users %}
+    {% for u in users %}
+        <div class="card">
+            {{ u.username }}
+            <a class="btn btn-success" href="{% url 'connect' u.id %}">
+                Connect
+            </a>
+        </div>
+    {% endfor %}
 {% endif %}
-
-<div style="margin-top: 20px;">
-    <a href="{% url 'dashboard' %}" class="btn btn-ghost">Back to Dashboard</a>
-</div>
 
 {% endblock %}

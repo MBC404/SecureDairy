@@ -12,7 +12,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.environ.get('SECRET_KEY')
 
 # DEBUG is read from the Render environment variable (set to 'False' in production).
-DEBUG = os.environ.get('DEBUG', 'False').lower() == 'true'
+DEBUG = os.environ.get('DEBUG')
 
 # ALLOWED_HOSTS is read from the Render environment variable (e.g., 'securedairy.onrender.com').
 # The .split(',') handles multiple hosts if needed.

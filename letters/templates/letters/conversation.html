@@ -1,87 +1,25 @@
 {% extends "letters/base.html" %}
 {% block content %}
 
-<style>
-    /* Custom styles for simple conversation layout */
-    .message-container {
-        max-width: 900px;
-        margin: 0 auto;
-        display: flex;
-        flex-direction: column;
-        gap: 15px;
-    }
+<h1>Conversation with {{ other_user.username }}</h1>
 
-    .message-card {
-        width: 75%;
-        padding: 18px;
-        border: 1px solid var(--border);
-        border-radius: 12px;
-        transition: none;
-    }
-    
-    .message-sent {
-        align-self: flex-end; /* Align sender's message to the right */
-        background: var(--panel); 
-        border-right: 5px solid var(--accent); /* Accent for sender */
-        border-radius: 12px 0 12px 12px; /* Square corner on top-right */
-    }
+{% for letter in letters %}
+    {% if letter.approved_version %}
+        <div class="card">
+            <strong>{{ letter.sender.username }}</strong><br>
+            {{ letter.approved_version.content }}
+            <br><br>
+            <a class="btn btn-ghost" href="{% url 'modify' letter.id %}">
+                Request Modification
+            </a>
+        </div>
+    {% endif %}
+{% empty %}
+    <p>No letters yet.</p>
+{% endfor %}
 
-    .message-received {
-        align-self: flex-start; /* Align receiver's message to the left */
-        background: var(--card); 
-        border-left: 5px solid var(--success); /* Success for receiver */
-        border-radius: 0 12px 12px 12px; /* Square corner on top-left */
-    }
-    
-    /* Removed .mod-history-summary as requested previously */
-</style>
-
-<div class="content-header" style="max-width: 900px; margin: 0 auto 30px;">
-    <h1>Conversation with {{ other_user.username }}</h1>
-    <p class="text-muted">History of letters sent and received.</p>
-</div>
-
-
-<div class="message-container">
-    {% for letter in letters %}
-        {% if letter.approved_version %}
-            {% if letter.sender == user %}
-                <div class="message-card message-sent fade-in">
-                    <span style="font-size: 0.75em; color: var(--accent); font-weight: 600; display: block; margin-bottom: 5px;">YOU SENT</span>
-            {% else %}
-                <div class="message-card message-received fade-in">
-                    <span style="font-size: 0.75em; color: var(--success); font-weight: 600; display: block; margin-bottom: 5px;">{{ letter.sender.username }} SENT</span>
-            {% endif %}
-
-                <div style="margin-bottom: 10px; border-bottom: 1px solid var(--border); padding-bottom: 5px;">
-                    <span class="text-muted" style="font-size: 0.75em;">
-                        #{{ letter.id }} | {{ letter.created_at|date:"M d, H:i" }}
-                        {% if letter.pending_modifications %}
-                            <span class="status pending" style="margin-left: 5px; color: var(--text);">MOD PENDING</span>
-                        {% endif %}
-                    </span>
-                </div>
-
-                <div style="white-space: pre-wrap; margin-bottom: 15px;">
-                    {{ letter.approved_version.content }}
-                </div>
-
-                <div style="margin-top: 15px; text-align: right;">
-                    <a href="{% url 'modify' letter.id %}" class="btn btn-ghost">Request Modification</a>
-                </div>
-                
-            </div>
-        {% endif %}
-
-    {% empty %}
-        <p class="text-muted" style="text-align: center; padding: 50px; background: var(--card); border-radius: 12px; border: 1px solid var(--border);">
-            No letters yet in this conversation. Start a new one!
-        </p>
-    {% endfor %}
-</div>
-
-<div style="margin-top: 40px; border-top: 1px solid var(--border); padding-top: 20px; display: flex; justify-content: space-between; align-items: center; max-width: 900px; margin: 40px auto 0;">
-    <a href="{% url 'send_letter' other_user.id %}" class="btn btn-primary" style="width: 100%;">Write New Letter to {{ other_user.username }}</a>
-</div>
+<a class="btn btn-primary" href="{% url 'send_letter' other_user.id %}">
+    Write Letter
+</a>
 
 {% endblock %}

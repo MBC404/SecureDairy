@@ -1,57 +1,33 @@
 {% extends "letters/base.html" %}
 {% block content %}
 
-<div class="content-header">
-    <h1>Your Dashboard</h1>
-    <p class="text-muted">Manage your connections and pending approvals.</p>
-</div>
+<h1>Your Dashboard</h1>
 
-<div class="card-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px;">
-    
-    <div class="card fade-in">
-        <h2>Connection Requests</h2>
-        {% for req in pending_requests %}
-            <div class="list-item">
-                <p><strong>{{ req.requester.username }}</strong> wants to connect.</p>
-                <a href="{% url 'accept' req.id %}" class="btn btn-success">Accept</a>
-            </div>
-        {% empty %}
-            <p class="text-muted">No pending requests.</p>
-        {% endfor %}
-    </div>
-
-    <div class="card fade-in">
-        <h2>My Connections</h2>
-        {% for conn in connections %}
-            <div class="list-item">
-                {% if conn.requester == user %}
-                    <p>Connected with: <strong>{{ conn.receiver.username }}</strong></p>
-                    <a href="{% url 'conversation' conn.receiver.id %}" class="btn btn-primary">Open Chat</a>
-                {% else %}
-                    <p>Connected with: <strong>{{ conn.requester.username }}</strong></p>
-                    <a href="{% url 'conversation' conn.requester.id %}" class="btn btn-primary">Open Chat</a>
-                {% endif %}
-            </div>
-        {% empty %}
-            <p class="text-muted">No connections yet. <a href="{% url 'search_user' %}" class="btn btn-ghost" style="border:none; padding: 0;">Find someone.</a></p>
-        {% endfor %}
-    </div>
-
-</div>
-
-<div class="card fade-in" style="margin-top: 20px;">
-    <h2>Pending Modifications (Awaiting Your Approval)</h2>
-    {% for mod in modifications %}
-        <div class="list-item">
-            <p>
-                <strong style="color: var(--warning);">Modification Request</strong> for Letter #{{ mod.letter.id }}
-                <br>
-                <small class="text-muted">Requested by: {{ mod.requested_by.username }} ({{ mod.requested_at|date:"M d, H:i" }})</small>
-            </p>
-            <a href="{% url 'approve' mod.id %}" class="btn btn-success">Approve</a>
-        </div>
+<div class="card">
+    <h2>Connection Requests</h2>
+    {% for req in pending_requests %}
+        <p>{{ req.requester.username }}
+            <a class="btn btn-success" href="{% url 'accept' req.id %}">Accept</a>
+        </p>
     {% empty %}
-        <p class="text-muted">No modification requests are currently awaiting your approval.</p>
+        <p>No pending requests</p>
+    {% endfor %}
+</div>
+
+<div class="card">
+    <h2>My Connections</h2>
+    {% for conn in connections %}
+        {% if conn.requester == user %}
+            <a class="btn btn-primary" href="{% url 'conversation' conn.receiver.id %}">
+                {{ conn.receiver.username }}
+            </a>
+        {% else %}
+            <a class="btn btn-primary" href="{% url 'conversation' conn.requester.id %}">
+                {{ conn.requester.username }}
+            </a>
+        {% endif %}
+    {% empty %}
+        <p>No connections</p>
     {% endfor %}
 </div>
 
