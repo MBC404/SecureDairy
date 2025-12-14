@@ -3,7 +3,7 @@
 
 <h2>Send Letter to {{ receiver.username }}</h2>
 
-<form method="post">
+<form method="post" class="card">
     {% csrf_token %}
     {{ form.content }}
     <button class="btn btn-primary">Send</button>

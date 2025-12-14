@@ -3,7 +3,7 @@
 
 <h2>Request Modification</h2>
 
-<form method="post">
+<form method="post" class="card">
     {% csrf_token %}
     {{ form.proposed_content }}
     <button class="btn btn-primary">Submit</button>

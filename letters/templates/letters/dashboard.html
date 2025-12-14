@@ -6,8 +6,9 @@
 <div class="card">
     <h2>Connection Requests</h2>
     {% for req in pending_requests %}
-        <p>{{ req.requester.username }}
-            <a class="btn btn-success" href="{% url 'accept' req.id %}">Accept</a>
+        <p>
+            {{ req.requester.username }}
+            <a href="{% url 'accept' req.id %}" class="btn btn-success">Accept</a>
         </p>
     {% empty %}
         <p>No pending requests</p>
@@ -18,16 +19,16 @@
     <h2>My Connections</h2>
     {% for conn in connections %}
         {% if conn.requester == user %}
-            <a class="btn btn-primary" href="{% url 'conversation' conn.receiver.id %}">
+            <a href="{% url 'conversation' conn.receiver.id %}" class="btn btn-primary">
                 {{ conn.receiver.username }}
             </a>
         {% else %}
-            <a class="btn btn-primary" href="{% url 'conversation' conn.requester.id %}">
+            <a href="{% url 'conversation' conn.requester.id %}" class="btn btn-primary">
                 {{ conn.requester.username }}
             </a>
         {% endif %}
     {% empty %}
-        <p>No connections</p>
+        <p>No connections yet</p>
     {% endfor %}
 </div>
 

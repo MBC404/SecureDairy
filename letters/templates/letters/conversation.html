@@ -6,19 +6,20 @@
 {% for letter in letters %}
     {% if letter.approved_version %}
         <div class="card">
-            <strong>{{ letter.sender.username }}</strong><br>
-            {{ letter.approved_version.content }}
-            <br><br>
-            <a class="btn btn-ghost" href="{% url 'modify' letter.id %}">
+            <strong>{{ letter.sender.username }}</strong>
+            <p style="white-space:pre-wrap;">
+                {{ letter.approved_version.content }}
+            </p>
+            <a href="{% url 'modify' letter.id %}" class="btn btn-ghost">
                 Request Modification
             </a>
         </div>
     {% endif %}
 {% empty %}
-    <p>No letters yet.</p>
+    <p>No letters yet</p>
 {% endfor %}
 
-<a class="btn btn-primary" href="{% url 'send_letter' other_user.id %}">
+<a href="{% url 'send_letter' other_user.id %}" class="btn btn-primary">
     Write Letter
 </a>
 
