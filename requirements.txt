@@ -1,5 +1,5 @@
-pip install Django==5.2.8  # Use the exact version from your old file
-pip install gunicorn==23.0.0
-pip install psycopg2-binary==2.9.10
-pip install dj-database-url==3.0.1
-pip install whitenoise==6.11.0
+Django==5.2.8 
+gunicorn==23.0.0
+psycopg2-binary==2.9.10
+dj-database-url==3.0.1
+whitenoise==6.11.0
