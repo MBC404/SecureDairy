@@ -4,6 +4,7 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
 from django.utils import timezone
 from django.db.models import Q
+from .forms import SignupForm, LetterForm
 
 from .models import Letter, ModificationRequest, UserConnection, LetterVersion
 from .forms import SignupForm # <-- NEW IMPORT
@@ -147,26 +148,46 @@ def conversation(request, user_id):
 
 @login_required
 def send_letter(request, user_id):
+    # Retrieve the intended recipient
     receiver = get_object_or_404(User, id=user_id)
-
+    
+    # Check for POST request
     if request.method == "POST":
-        content = request.POST.get("content")
+        form = LetterForm(request.POST) # Initialize form with submitted data
+        
+        if form.is_valid():
+            # Data is valid (content is not blank)
+            content = form.cleaned_data["content"]
+            
+            # --- Database Save Logic (Only runs if form is valid) ---
+            
+            # 1. Create the Letter object (the conversation container)
+            letter = Letter.objects.create(
+                sender=request.user,
+                receiver=receiver
+            )
 
-        letter = Letter.objects.create(
-            sender=request.user,
-            receiver=receiver
-        )
+            # 2. Create the first LetterVersion
+            LetterVersion.objects.create(
+                letter=letter,
+                content=content,
+                created_by=request.user,
+                is_approved=True
+            )
 
-        LetterVersion.objects.create(
-            letter=letter,
-            content=content,
-            created_by=request.user,
-            is_approved=True
-        )
+            return redirect("conversation", user_id=user_id)
+        # If form is NOT valid, execution falls through to render the page with errors.
+    
+    # Handle GET request (or invalid POST request)
+    else:
+        # CRITICAL: Instantiate a blank form for the GET request
+        form = LetterForm() 
 
-        return redirect("conversation", user_id=user_id)
-
-    return render(request, "letters/send.html", {"receiver": receiver})
+    # Pass both receiver and the form object to the template
+    return render(request, "letters/send.html", {
+        "receiver": receiver,
+        "form": form, # <-- Fixes the missing text box
+    })
 
 
 # ---------- MODIFY LETTER ----------
