@@ -1,21 +1,21 @@
 {% extends "letters/base.html" %}
 {% block content %}
 
-<h1>Find Users</h1>
+<div class="card">
+<h2>Find Users</h2>
 
-<form method="post" class="card">
+<form method="post">
 {% csrf_token %}
 <input name="username" placeholder="Username">
-<button class="btn btn-primary">Search</button>
+<button class="btn primary">Search</button>
 </form>
+</div>
 
 {% for u in users %}
 <div class="card">
 <b>{{ u.username }}</b>
-<a href="{% url 'connect' u.id %}" class="btn btn-success">Connect</a>
+<a href="{% url 'connect' u.id %}" class="btn success">Connect</a>
 </div>
-{% empty %}
-<p>No users found</p>
 {% endfor %}
 
 {% endblock %}

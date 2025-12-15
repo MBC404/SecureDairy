@@ -2,159 +2,164 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>LetterBox</title>
+<title>SecureDairy</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;500;700&display=swap" rel="stylesheet">
+
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
 
 <style>
-:root {
-    --bg:#0f172a;
-    --panel:#020617;
-    --surface:#1e293b;
-    --border:#334155;
+:root{
+    --bg:#0b1220;
+    --panel:#0f172a;
+    --card:#020617;
+    --border:#1e293b;
     --text:#e5e7eb;
     --muted:#94a3b8;
     --accent:#6366f1;
     --success:#22c55e;
-    --warning:#f59e0b;
+    --warn:#f59e0b;
     --danger:#ef4444;
 }
 
-* { box-sizing:border-box; }
-
-body {
+*{box-sizing:border-box}
+body{
     margin:0;
-    font-family:Inter,system-ui,sans-serif;
+    font-family:Inter,sans-serif;
     background:var(--bg);
     color:var(--text);
 }
 
-.main-layout {
+.layout{
     display:flex;
     min-height:100vh;
 }
 
-.sidebar {
+/* SIDEBAR */
+.sidebar{
     width:260px;
-    background:var(--panel);
+    background:linear-gradient(180deg,#020617,#020617);
     border-right:1px solid var(--border);
-    padding:20px;
+    padding:24px;
 }
-
-.logo {
+.logo{
     font-size:1.6em;
-    font-weight:700;
+    font-weight:800;
     color:var(--accent);
-    text-align:center;
-    margin-bottom:30px;
+    margin-bottom:40px;
 }
-
-.nav-link {
+.nav a{
     display:block;
-    padding:12px;
-    margin-bottom:10px;
-    border-radius:8px;
+    padding:14px 16px;
+    margin-bottom:12px;
+    border-radius:14px;
     text-decoration:none;
     color:var(--text);
+    background:transparent;
 }
-.nav-link:hover { background:var(--surface); }
-
-.content-area {
-    flex-grow:1;
-    padding:30px;
-}
-
-.card {
+.nav a:hover{
     background:var(--panel);
-    border:1px solid var(--border);
-    border-radius:16px;
-    padding:22px;
-    margin-bottom:20px;
 }
+.user{
+    margin-top:auto;
+    color:var(--muted);
+    font-size:.85em;
+}
+
+/* MAIN */
+.main{
+    flex:1;
+    padding:32px;
+}
+
+/* CARD */
+.card{
+    background:linear-gradient(180deg,#020617,#020617);
+    border:1px solid var(--border);
+    border-radius:20px;
+    padding:24px;
+    margin-bottom:24px;
+}
+
+/* BUTTON */
+.btn{
+    padding:10px 18px;
+    border-radius:999px;
+    border:none;
+    font-weight:600;
+    cursor:pointer;
+    text-decoration:none;
+}
+.primary{background:var(--accent);color:white}
+.success{background:var(--success);color:#022c22}
+.warn{background:var(--warn);color:#111827}
 
 /* CHAT */
-.message {
-    max-width:70%;
-    padding:18px;
-    border-radius:18px;
-    margin-bottom:20px;
+.chat{
+    display:flex;
+    flex-direction:column;
+    gap:20px;
 }
-.sent {
-    margin-left:auto;
+.bubble{
+    max-width:70%;
+    padding:18px 22px;
+    border-radius:20px;
+    position:relative;
+    line-height:1.6;
+}
+.sent{
+    align-self:flex-end;
     background:linear-gradient(135deg,#6366f1,#4f46e5);
 }
-.received {
-    margin-right:auto;
+.recv{
+    align-self:flex-start;
     background:#020617;
     border:1px solid var(--border);
 }
-
-.message-header {
-    font-size:0.75em;
-    opacity:0.7;
-    display:flex;
-    justify-content:space-between;
-    margin-bottom:8px;
+.meta{
+    font-size:.7em;
+    color:var(--muted);
+    margin-bottom:6px;
 }
 
-.btn {
-    padding:10px 16px;
-    border-radius:999px;
-    font-weight:600;
-    border:none;
-    cursor:pointer;
-    text-decoration:none;
-    display:inline-block;
-}
-.btn-primary { background:var(--accent); color:white; }
-.btn-success { background:var(--success); color:black; }
-.btn-warning { background:var(--warning); color:black; }
-.btn-danger { background:var(--danger); color:white; }
-
-input, textarea {
-    width:100%;
-    padding:12px;
-    background:var(--surface);
-    border:1px solid var(--border);
-    border-radius:10px;
-    color:var(--text);
-}
-
-.fab {
+/* FLOATING BUTTON */
+.fab{
     position:fixed;
     bottom:30px;
     right:30px;
     background:linear-gradient(135deg,#22c55e,#16a34a);
-    padding:18px 22px;
+    padding:18px 24px;
     border-radius:999px;
+    font-weight:800;
     color:white;
-    font-weight:700;
     text-decoration:none;
+    box-shadow:0 20px 40px rgba(0,0,0,.5);
 }
 </style>
 </head>
 
 <body>
-
-<div class="main-layout">
+<div class="layout">
 
 {% if user.is_authenticated %}
 <div class="sidebar">
-    <div class="logo">LetterBox</div>
-    <a href="{% url 'dashboard' %}" class="nav-link">Dashboard</a>
-    <a href="{% url 'search_user' %}" class="nav-link">Find Connections</a>
-    <div style="margin-top:40px;color:var(--muted);">
-        {{ user.username }}
-        <a href="{% url 'logout' %}" class="nav-link" style="background:var(--danger);margin-top:10px;">Logout</a>
+    <div class="logo">SecureDairy</div>
+
+    <div class="nav">
+        <a href="{% url 'dashboard' %}">🏠 Dashboard</a>
+        <a href="{% url 'search_user' %}">🔍 Find Users</a>
+    </div>
+
+    <div class="user">
+        {{ user.username }}<br>
+        <a href="{% url 'logout' %}" style="color:var(--danger)">Logout</a>
     </div>
 </div>
 {% endif %}
 
-<div class="content-area">
-    {% block content %}{% endblock %}
+<div class="main">
+{% block content %}{% endblock %}
 </div>
 
 </div>
-
 </body>
 </html>

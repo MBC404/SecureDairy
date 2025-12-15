@@ -1,12 +1,15 @@
 {% extends "letters/base.html" %}
 {% block content %}
 
+<div class="card">
 <h2>Request Modification</h2>
 
-<form method="post" class="card">
+<form method="post">
 {% csrf_token %}
-{{ form.proposed_content }}
-<button class="btn btn-warning">Submit Request</button>
+<textarea name="proposed_content" rows="8" style="width:100%"></textarea>
+<br><br>
+<button class="btn warn">Submit Request</button>
 </form>
+</div>
 
 {% endblock %}
