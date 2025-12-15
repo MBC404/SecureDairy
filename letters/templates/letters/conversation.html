@@ -1,27 +1,24 @@
-{% extends "letters/base.html" %}
-{% block content %}
-
-<h2>Conversation with {{ other_user.username }}</h2>
-
 {% for letter in letters %}
-    {% with letter.versions.last as v %}
-    <div style="border:1px solid #333;padding:15px;margin-bottom:15px;">
-        <b>{% if letter.sender == user %}You{% else %}{{ letter.sender.username }}{% endif %}</b>
-        <p>{{ v.content }}</p>
+    {% for v in letter.versions.all %}
+        <div class="card">
 
-        {% if not v.approved %}
-            <p style="color:orange;">⚠ Modification requested</p>
-        {% endif %}
+            <b>
+                {{ letter.sender.username }}
+            </b>
 
-        {% if user == letter.receiver and v.approved %}
-            <a href="{% url 'modify' letter.id %}">Request Modification</a>
-        {% endif %}
-    </div>
-    {% endwith %}
-{% empty %}
-<p>No letters yet</p>
+            <p>{{ v.content }}</p>
+
+            {% if not v.approved %}
+                <p style="color:#f59e0b;">⚠ Modification requested</p>
+
+                {% if user == letter.sender %}
+                    <a href="{% url 'approve_modification' v.id %}"
+                       style="color:#22c55e;font-weight:bold;">
+                        ✅ Accept Modification
+                    </a>
+                {% endif %}
+            {% endif %}
+
+        </div>
+    {% endfor %}
 {% endfor %}
-
-<a href="{% url 'send_letter' other_user.id %}">Write Letter</a>
-
-{% endblock %}

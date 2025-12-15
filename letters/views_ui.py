@@ -134,3 +134,22 @@ def modify_letter(request, letter_id):
         return redirect("conversation", user_id=letter.sender.id)
 
     return render(request, "letters/modify.html", {"letter": letter})
+
+@login_required
+def approve_modification(request, version_id):
+    version = get_object_or_404(LetterVersion, id=version_id)
+
+    letter = version.letter
+
+    # ONLY sender can approve
+    if request.user != letter.sender:
+        return redirect("conversation", user_id=letter.receiver.id)
+
+    # approve this version
+    version.approved = True
+    version.save()
+
+    return redirect(
+        "conversation",
+        user_id=letter.receiver.id
+    )
