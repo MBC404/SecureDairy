@@ -1,24 +1,50 @@
+{% extends "letters/base.html" %}
+{% block content %}
+
+<h2>Conversation with {{ other_user.username }}</h2>
+
 {% for letter in letters %}
-    {% for v in letter.versions.all %}
-        <div class="card">
+    {% with v=letter.versions.last %}
+    <div class="card">
 
-            <b>
+        <b>
+            {% if letter.sender == user %}
+                You
+            {% else %}
                 {{ letter.sender.username }}
-            </b>
-
-            <p>{{ v.content }}</p>
-
-            {% if not v.approved %}
-                <p style="color:#f59e0b;">⚠ Modification requested</p>
-
-                {% if user == letter.sender %}
-                    <a href="{% url 'approve_modification' v.id %}"
-                       style="color:#22c55e;font-weight:bold;">
-                        ✅ Accept Modification
-                    </a>
-                {% endif %}
             {% endif %}
+        </b>
 
-        </div>
-    {% endfor %}
+        <p style="margin-top:8px;">
+            {{ v.content }}
+        </p>
+
+        {% if not v.approved %}
+            <p style="color:#f59e0b;">⚠ Modification requested</p>
+
+            {% if user == letter.sender %}
+                <a href="{% url 'approve_modification' v.id %}"
+                   style="color:#22c55e;">
+                    Accept Modification
+                </a>
+            {% endif %}
+        {% endif %}
+
+        {% if user == letter.receiver and v.approved %}
+            <a href="{% url 'modify' letter.id %}"
+               style="color:#a78bfa;">
+                Request Modification
+            </a>
+        {% endif %}
+
+    </div>
+    {% endwith %}
+{% empty %}
+<p>No letters yet</p>
 {% endfor %}
+
+<a href="{% url 'send_letter' other_user.id %}" class="fab">
+    Write Letter
+</a>
+
+{% endblock %}
