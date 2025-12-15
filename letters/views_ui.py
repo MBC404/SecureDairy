@@ -3,9 +3,9 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.db.models import Q
-
+from django.contrib import messages
 from .models import Connection, Letter, LetterVersion
-
+from django.contrib.auth import login
 
 def login_view(request):
     if request.method == "POST":
@@ -20,13 +20,31 @@ def login_view(request):
     return render(request, "letters/login.html")
 
 
-def signup_view(request):
+def signup(request):
     if request.method == "POST":
-        User.objects.create_user(
-            username=request.POST["username"],
-            password=request.POST["password"]
+        username = request.POST.get("username")
+        password = request.POST.get("password")
+        confirm = request.POST.get("confirm")
+
+        if not username or not password:
+            messages.error(request, "All fields are required")
+            return redirect("signup")
+
+        if password != confirm:
+            messages.error(request, "Passwords do not match")
+            return redirect("signup")
+
+        if User.objects.filter(username=username).exists():
+            messages.error(request, "Username already exists")
+            return redirect("signup")
+
+        user = User.objects.create_user(
+            username=username,
+            password=password
         )
-        return redirect("login")
+        login(request, user)
+        return redirect("dashboard")
+
     return render(request, "letters/signup.html")
 
 
@@ -137,12 +155,11 @@ def modify_letter(request, letter_id):
 @login_required
 def approve_modification(request, version_id):
     version = get_object_or_404(LetterVersion, id=version_id)
-    letter = version.letter
 
-    if request.user != letter.sender:
-        return redirect("conversation", user_id=letter.receiver.id)
+    if request.user != version.letter.sender:
+        return redirect("dashboard")
 
     version.approved = True
     version.save()
 
-    return redirect("conversation", user_id=letter.receiver.id)
+    return redirect("conversation", user_id=version.letter.receiver.id)

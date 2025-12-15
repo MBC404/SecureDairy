@@ -21,11 +21,11 @@ class Letter(models.Model):
 
 
 class LetterVersion(models.Model):
-    letter = models.ForeignKey(Letter, related_name="versions", on_delete=models.CASCADE)
+    letter = models.ForeignKey(Letter, on_delete=models.CASCADE, related_name="versions")
     content = models.TextField()
-    approved = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
-
+    approved = models.BooleanField(default=False)
+    
     class Meta:
         ordering = ["created_at"]
 

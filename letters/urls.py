@@ -10,4 +10,6 @@ urlpatterns = [
     path("send/<int:user_id>/", views_ui.send_letter, name="send_letter"),
     path("modify/<int:letter_id>/", views_ui.modify_letter, name="modify"),
     path("approve/<int:version_id>/", views_ui.approve_modification, name="approve_modification"),
+    path("signup/", views_ui.signup, name="signup"),
+
 ]
