@@ -8,7 +8,7 @@ class Connection(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f"{self.requester} -> {self.receiver} ({self.accepted})"
+        return f"{self.requester} -> {self.receiver}"
 
 
 class Letter(models.Model):
@@ -17,7 +17,7 @@ class Letter(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f"Letter {self.id}: {self.sender} -> {self.receiver}"
+        return f"Letter {self.id}"
 
 
 class LetterVersion(models.Model):
@@ -30,4 +30,4 @@ class LetterVersion(models.Model):
         ordering = ["created_at"]
 
     def __str__(self):
-        return f"Version {self.id} of Letter {self.letter.id}"
+        return f"Version {self.id} (Letter {self.letter.id})"

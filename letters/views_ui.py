@@ -41,13 +41,13 @@ def dashboard(request):
 
     pending_requests = Connection.objects.filter(
         receiver=user, accepted=False
-    ).select_related("requester")
+    )
 
     connections = Connection.objects.filter(
         accepted=True
     ).filter(
         Q(requester=user) | Q(receiver=user)
-    ).select_related("requester", "receiver")
+    )
 
     return render(request, "letters/dashboard.html", {
         "pending_requests": pending_requests,
@@ -107,11 +107,13 @@ def send_letter(request, user_id):
             sender=request.user,
             receiver=receiver
         )
+
         LetterVersion.objects.create(
             letter=letter,
             content=request.POST["content"],
             approved=True
         )
+
         return redirect("conversation", user_id=receiver.id)
 
     return render(request, "letters/send.html", {"receiver": receiver})
@@ -119,11 +121,7 @@ def send_letter(request, user_id):
 
 @login_required
 def modify_letter(request, letter_id):
-    letter = get_object_or_404(
-        Letter,
-        id=letter_id,
-        receiver=request.user
-    )
+    letter = get_object_or_404(Letter, id=letter_id, receiver=request.user)
 
     if request.method == "POST":
         LetterVersion.objects.create(
@@ -135,21 +133,16 @@ def modify_letter(request, letter_id):
 
     return render(request, "letters/modify.html", {"letter": letter})
 
+
 @login_required
 def approve_modification(request, version_id):
     version = get_object_or_404(LetterVersion, id=version_id)
-
     letter = version.letter
 
-    # ONLY sender can approve
     if request.user != letter.sender:
         return redirect("conversation", user_id=letter.receiver.id)
 
-    # approve this version
     version.approved = True
     version.save()
 
-    return redirect(
-        "conversation",
-        user_id=letter.receiver.id
-    )
+    return redirect("conversation", user_id=letter.receiver.id)

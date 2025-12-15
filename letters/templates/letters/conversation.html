@@ -22,12 +22,12 @@
         {% if not v.approved %}
             <p style="color:#f59e0b;">⚠ Modification requested</p>
 
-            {% if user == letter.sender %}
-                <a href="{% url 'approve_modification' v.id %}"
-                   style="color:#22c55e;">
-                    Accept Modification
-                </a>
-            {% endif %}
+            {% if user == letter.sender and not v.approved and v.id %}
+    <a href="{% url 'approve_modification' v.id %}"
+       style="color:#22c55e;font-weight:600;">
+        Accept Modification
+    </a>
+{% endif %}
         {% endif %}
 
         {% if user == letter.receiver and v.approved %}

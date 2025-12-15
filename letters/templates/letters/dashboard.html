@@ -3,23 +3,21 @@
 
 <h2>Dashboard</h2>
 
-<h3>Pending Requests</h3>
+<h3>Pending Connections</h3>
 {% for r in pending_requests %}
-<p>
-{{ r.requester.username }}
-<a href="{% url 'accept' r.id %}">Accept</a>
-</p>
+<p>{{ r.requester.username }}
+<a href="{% url 'accept' r.id %}">Accept</a></p>
 {% empty %}
-<p>No requests</p>
+<p>None</p>
 {% endfor %}
 
 <h3>Connections</h3>
 {% for c in connections %}
-    {% if c.requester == user %}
-        <a href="{% url 'conversation' c.receiver.id %}">{{ c.receiver.username }}</a>
-    {% else %}
-        <a href="{% url 'conversation' c.requester.id %}">{{ c.requester.username }}</a>
-    {% endif %}
+{% if c.requester == user %}
+<a href="{% url 'conversation' c.receiver.id %}">{{ c.receiver.username }}</a>
+{% else %}
+<a href="{% url 'conversation' c.requester.id %}">{{ c.requester.username }}</a>
+{% endif %}
 {% empty %}
 <p>No connections</p>
 {% endfor %}
