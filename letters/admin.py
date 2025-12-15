@@ -1,5 +1,17 @@
 from django.contrib import admin
-from .models import Letter, ModificationRequest
+from .models import Connection, Letter, LetterVersion
 
-admin.site.register(Letter) # cite: uploaded:admin.py
-admin.site.register(ModificationRequest) # cite: uploaded:admin.py
+@admin.register(Connection)
+class ConnectionAdmin(admin.ModelAdmin):
+    list_display = ("requester", "receiver", "accepted", "created_at")
+    list_filter = ("accepted",)
+
+
+@admin.register(Letter)
+class LetterAdmin(admin.ModelAdmin):
+    list_display = ("sender", "receiver", "created_at")
+
+
+@admin.register(LetterVersion)
+class LetterVersionAdmin(admin.ModelAdmin):
+    list_display = ("letter", "approved", "created_at")
