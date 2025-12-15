@@ -1,15 +1,12 @@
 {% extends "letters/base.html" %}
 {% block content %}
 
-<div class="card">
-<h2>Send Letter</h2>
+<h2>Send Letter to {{ receiver.username }}</h2>
 
 <form method="post">
 {% csrf_token %}
-<textarea name="content" rows="8" style="width:100%"></textarea>
-<br><br>
-<button class="btn primary">Send Securely</button>
+<textarea name="content" rows="6"></textarea><br>
+<button type="submit">Send</button>
 </form>
-</div>
 
 {% endblock %}

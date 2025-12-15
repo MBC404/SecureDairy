@@ -1,6 +1,13 @@
 from django.contrib import admin
 from .models import Connection, Letter, LetterVersion
 
+
+
+admin.site.register(Connection)
+admin.site.register(Letter)
+admin.site.register(LetterVersion)
+
+
 @admin.register(Connection)
 class ConnectionAdmin(admin.ModelAdmin):
     list_display = ("requester", "receiver", "accepted", "created_at")

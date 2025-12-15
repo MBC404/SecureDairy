@@ -3,31 +3,25 @@
 
 <h2>Conversation with {{ other_user.username }}</h2>
 
-<div class="chat">
 {% for letter in letters %}
     {% with letter.versions.last as v %}
-    <div class="bubble {% if letter.sender == user %}sent{% else %}recv{% endif %}">
-        <div class="meta">
-            {% if letter.sender == user %}You{% else %}{{ letter.sender.username }}{% endif %}
-            · {{ letter.created_at|date:"M d, H:i" }}
-        </div>
+    <div style="border:1px solid #333;padding:15px;margin-bottom:15px;">
+        <b>{% if letter.sender == user %}You{% else %}{{ letter.sender.username }}{% endif %}</b>
+        <p>{{ v.content }}</p>
 
-        {{ v.content }}
+        {% if not v.approved %}
+            <p style="color:orange;">⚠ Modification requested</p>
+        {% endif %}
 
-        {% if user == letter.receiver %}
-        <div style="margin-top:12px;">
-            <a href="{% url 'modify' letter.id %}" class="btn warn">
-                Request Modification
-            </a>
-        </div>
+        {% if user == letter.receiver and v.approved %}
+            <a href="{% url 'modify' letter.id %}">Request Modification</a>
         {% endif %}
     </div>
     {% endwith %}
 {% empty %}
-<p style="color:var(--muted)">No messages yet</p>
+<p>No letters yet</p>
 {% endfor %}
-</div>
 
-<a href="{% url 'send_letter' other_user.id %}" class="fab">✉ New Letter</a>
+<a href="{% url 'send_letter' other_user.id %}">Write Letter</a>
 
 {% endblock %}

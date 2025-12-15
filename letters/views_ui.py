@@ -5,7 +5,6 @@ from django.contrib.auth.models import User
 from django.db.models import Q
 
 from .models import Connection, Letter, LetterVersion
-from .forms import LetterForm, ModificationForm
 
 
 def login_view(request):
@@ -50,14 +49,10 @@ def dashboard(request):
         Q(requester=user) | Q(receiver=user)
     ).select_related("requester", "receiver")
 
-    return render(
-        request,
-        "letters/dashboard.html",
-        {
-            "pending_requests": pending_requests,
-            "connections": connections,
-        }
-    )
+    return render(request, "letters/dashboard.html", {
+        "pending_requests": pending_requests,
+        "connections": connections,
+    })
 
 
 @login_required
@@ -95,16 +90,12 @@ def conversation(request, user_id):
     letters = Letter.objects.filter(
         Q(sender=request.user, receiver=other_user) |
         Q(sender=other_user, receiver=request.user)
-    ).select_related("sender", "receiver").prefetch_related("versions")
+    ).prefetch_related("versions")
 
-    return render(
-        request,
-        "letters/conversation.html",
-        {
-            "other_user": other_user,
-            "letters": letters,
-        }
-    )
+    return render(request, "letters/conversation.html", {
+        "other_user": other_user,
+        "letters": letters,
+    })
 
 
 @login_required
@@ -118,7 +109,8 @@ def send_letter(request, user_id):
         )
         LetterVersion.objects.create(
             letter=letter,
-            content=request.POST["content"]
+            content=request.POST["content"],
+            approved=True
         )
         return redirect("conversation", user_id=receiver.id)
 
@@ -127,13 +119,17 @@ def send_letter(request, user_id):
 
 @login_required
 def modify_letter(request, letter_id):
-    letter = get_object_or_404(Letter, id=letter_id, receiver=request.user)
+    letter = get_object_or_404(
+        Letter,
+        id=letter_id,
+        receiver=request.user
+    )
 
     if request.method == "POST":
         LetterVersion.objects.create(
             letter=letter,
             content=request.POST["proposed_content"],
-            approved=True
+            approved=False
         )
         return redirect("conversation", user_id=letter.sender.id)
 
